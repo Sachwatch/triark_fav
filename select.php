@@ -1,16 +1,13 @@
 <?php
-require_once('funcs.php');   // XSS対策の h() を使うため読み込む
-require_once('db_config.php');
+require_once('funcs.php');
 
-// 1. DB接続
-try {
-$pdo = new PDO("mysql:host={$db_host};dbname={$db_name};charset=utf8", $db_user, $db_pass);} catch (PDOException $e) {
-    exit('DBConnectError:' . $e->getMessage());
-}
+// DB接続
+$pdo = db_conn();
 
-// 2. データ取得SQL作成
+// データ取得SQL作成
 $stmt = $pdo->prepare("SELECT * FROM triark_favorites");
 $status = $stmt->execute();
+
 
 // 3. データ表示用の変数を組み立て
 $view = "";
@@ -26,6 +23,17 @@ if ($status == false) {
         }
         $view .= "<div class='fav-comment'>" . h($result['comment']) . "</div>";
         $view .= "<div class='fav-date'>" . h($result['created_at']) . "</div>";
+        
+        // 編集ボタン（idを持ってdetail.phpへ・GETで渡す）
+        $view .="<div class='fav-actions'>";
+        $view .="<a class='btn-edit' href='detail.php?id=" . h($result['id']) . "'>編集</a>";
+        
+        // 削除ボタン（idを持ってdelete.phpへ・POST+確認ダイアログ）
+        $view .="<form class='del-form' action='delete.php' method='post' onsubmit='return confirm(\"本当に削除してもよいですか？\")'>";
+        $view .="<input type='hidden' name='id' value='" . h($result['id']) . "'>";
+        $view .="<button type='submit' class='btn-del'>削除</button>";
+        $view .="</form>";
+        $view .="</div>";
         $view .= "</div>";
     }
 }
@@ -69,6 +77,21 @@ if ($status == false) {
       font-size: 13px; color: #FF8C42; text-decoration: none;
     }
     .back-link:hover { text-decoration: underline; }
+  
+  .fav-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-edit, .btn-delete {
+    display: inline-block; padding: 6px 16px; 
+    border-radius: 8px; font-size:  13px; font-weight: bold;
+    text-decoration: none; cursor: pointer; border: none;
+  }
+  .btn-edit { background: #00B4C8; color: white; }
+  .btn-edit:hover { background: #0098a8; }
+  .btn-delete { background: #FF8C42; color: white; }
+  .btn-delete:hover { background: #ff7a26; }
+  .btn-del:hover { background: #ff7a26; }
+  .del-form { margin: 0; }
+  
+  
   </style>
 </head>
 <body>
