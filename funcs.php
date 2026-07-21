@@ -28,3 +28,10 @@ function redirect($file_name) {
     exit();
 }
 
+// ログインチェック（ログインしていなければログイン画面へ飛ばす）
+function loginCheck() {
+    if (!isset($_SESSION['chk_ssid']) || $_SESSION['chk_ssid'] != session_id()) {
+        header('Location: login.php');
+        exit();
+    }
+}
